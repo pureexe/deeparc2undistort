@@ -16,9 +16,8 @@ pip install git+https://github.com/pureexe/deeparc2undistort
 ```
 
 ## usage
-
 ```
-deeparc2undistort -i <input directory> -r <reference camera model> -o <output directory>
+deeparc2undistort -i <input images directory> -r <reference camera model> -o <output colmap undistorted directory>
 ```
 
 If you have more than 1 object to image just put every object into sub directory of `<input directory>` and specify `-b`
