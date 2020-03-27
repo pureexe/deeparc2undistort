@@ -8,7 +8,7 @@ sudo apt install colmap
 # install colmap2deeparc 
 pip install git+https://github.com/pureexe/colmap2deeparc
 # download our sfm
-wget https://github.com/pureexe/colmap2deeparc/releases/download/v0.0.1/sfm.deb
+wget https://github.com/pureexe/deeparc2undistort/releases/download/v0.0.1/sfm.deb
 # install our sfm
 sudo dpkg -i sfm.deb
 # install deeparc2undistort
