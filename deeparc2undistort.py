@@ -1,8 +1,28 @@
 import os, shutil, tempfile, subprocess, argparse, time, sys
 from timeit import default_timer as timer
 
+def is_windows():
+    return os.name == 'nt'
+
 def has_gpu():
     return shutil.which('nvidia-smi') is not None
+
+def get_wsl_path(windows_path):
+    abs_path = os.path.abspath(windows_path)
+    abs_path = str(abs_path).replace("\\","/")
+    cp = subprocess.run(["wsl", "wslpath", "-a", abs_path],
+        universal_newlines=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=False
+    )
+    return cp.stdout.strip()
+
+def get_colmap_binary_path():
+    if is_windows():
+        return 'colmap.bat'
+    else:
+        return 'colmap'
 
 def check_require_software():
     softwares = ['colmap','colmap2deeparc']
@@ -12,7 +32,7 @@ def check_require_software():
 
 def call_feature_extrator(image_dir,db_path,use_gpu = True):
     subprocess.call([
-        'colmap', 'feature_extractor',
+        get_colmap_binary_path(), 'feature_extractor',
         '--image_path', image_dir,
         '--database_path', db_path,
         '--ImageReader.single_camera_per_folder', '1',
@@ -26,12 +46,12 @@ def call_feature_matching(db_path, use_gpu = True):
         matching_file = os.path.join(
             os.path.dirname(sys.modules['deeparc2undistort'].__file__),
             'window5x5_matching_no_duplicate.txt'
-        )
+        )            
     except:
         # in case it doesn't wrap by package yet.
         matching_file = 'window5x5_matching_no_duplicate.txt'
     subprocess.call([
-        'colmap', 'matches_importer',
+        get_colmap_binary_path(), 'matches_importer',
         '--database_path', db_path,
         '--match_list_path', matching_file, 
         '--SiftMatching.guided_matching', '1',
@@ -50,11 +70,16 @@ def call_colmap2deeparc(db_path,reference_model,working_dir):
 
 
 def call_our_sfm(deeparc_path,model_dir):
-    subprocess.call([
-        'sfm',  #need to change to support package later
-        '-input', deeparc_path,
+    sfm_path = ['sfm']
+    if is_windows():
+        deeparc_path = get_wsl_path(deeparc_path)
+        model_dir = get_wsl_path(model_dir)
+        sfm_path = ['wsl', 'sfm']
+    command = sfm_path + [
+       '-input', deeparc_path,
         '-output', model_dir
-    ])
+    ]
+    subprocess.call(command)
 
 def call_image_undistorter(image_dir, model_dir, args):
     # colmap image_undistorter --image_path images/ --input_path teabottle_model --output_path dense/
@@ -63,7 +88,7 @@ def call_image_undistorter(image_dir, model_dir, args):
     else:
         output_path = args.output
     subprocess.call([
-        'colmap', 'image_undistorter',
+        get_colmap_binary_path(), 'image_undistorter',
         '--image_path', image_dir,
         '--input_path', model_dir,
         '--output_path', output_path
