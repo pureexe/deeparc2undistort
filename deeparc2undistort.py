@@ -1,32 +1,41 @@
 import os, shutil, tempfile, subprocess, argparse, time, sys
 from timeit import default_timer as timer
 
+def has_gpu():
+    return shutil.which('nvidia-smi') is not None
+
 def check_require_software():
     softwares = ['colmap','colmap2deeparc']
     for software in softwares:
         if shutil.which(software) is None:
             raise Exception('Install "{}" first!'.format(software))
 
-def call_feature_extrator(image_dir,db_path):
+def call_feature_extrator(image_dir,db_path,use_gpu = True):
     subprocess.call([
         'colmap', 'feature_extractor',
         '--image_path', image_dir,
         '--database_path', db_path,
         '--ImageReader.single_camera_per_folder', '1',
         '--SiftExtraction.estimate_affine_shape', '1',
-        '--SiftExtraction.domain_size_pooling', '1'
+        '--SiftExtraction.domain_size_pooling', '1',
+        '--SiftExtraction.use_gpu', '1' if use_gpu else '0'
     ])
 
-def call_feature_matching(db_path):
-    matching_file = os.path.join(
-        os.path.dirname(sys.modules['deeparc2undistort'].__file__),
-        'window5x5_matching_no_duplicate.txt'
-    )
+def call_feature_matching(db_path, use_gpu = True):
+    try:
+        matching_file = os.path.join(
+            os.path.dirname(sys.modules['deeparc2undistort'].__file__),
+            'window5x5_matching_no_duplicate.txt'
+        )
+    except:
+        # in case it doesn't wrap by package yet.
+        matching_file = 'window5x5_matching_no_duplicate.txt'
     subprocess.call([
         'colmap', 'matches_importer',
         '--database_path', db_path,
         '--match_list_path', matching_file, 
-        '--SiftMatching.guided_matching', '1'
+        '--SiftMatching.guided_matching', '1',
+        '--SiftMatching.use_gpu', '1' if use_gpu else '0'
     ])
 
 def call_colmap2deeparc(db_path,reference_model,working_dir):
@@ -62,6 +71,7 @@ def call_image_undistorter(image_dir, model_dir, args):
 
 def main(args):
     start_time = timer()
+    args.use_gpu = args.use_gpu and has_gpu()
     check_require_software() 
     queue = [args.input]
     if args.batch:
@@ -72,8 +82,8 @@ def main(args):
     for image_dir in queue:
         with tempfile.TemporaryDirectory() as working_dir, tempfile.TemporaryDirectory() as model_dir:
             db_path = os.path.join(working_dir,'colmap_feature.db')
-            call_feature_extrator(image_dir,db_path)
-            call_feature_matching(db_path)
+            call_feature_extrator(image_dir, db_path, args.use_gpu)
+            call_feature_matching(db_path, args.use_gpu)
             deeparc_path = call_colmap2deeparc(db_path, args.reference, working_dir)
             call_our_sfm(deeparc_path, model_dir)
             call_image_undistorter(image_dir, model_dir,args)
@@ -108,7 +118,13 @@ def entry_point():
         action='store_true',
         help='do multiple conversation by put every directory of image into input folder'
     )
-    parser.set_defaults(batch=False)
+    parser.add_argument(
+        '--no-gpu',
+        dest='use_gpu',
+        action='store_false',
+        help='do multiple conversation by put every directory of image into input folder'
+    )
+    parser.set_defaults(use_gpu=True)
     main(parser.parse_args())
 
 if __name__ == '__main__':
