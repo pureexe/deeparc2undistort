@@ -22,11 +22,19 @@ pip install git+https://github.com/pureexe/deeparc2undistort
 
 ### Windows 
 
-#### Download Colamp
+#### Download Colmap
+
+Go to [Colmap's Github Release page](https://github.com/colmap/colmap/releases) Click on assets and then click on [COLMAP-dev-windows.zip](https://github.com/colmap/colmap/releases/download/3.6-dev.3/COLMAP-dev-windows.zip) then extract file.
 
 #### Set colmap to environment path
 
+Add Colmap to Environment Variable name PATH
+
+[Youtube video](https://www.youtube.com/watch?v=Kj3FSWoKYfo)  show how to edit evironment variable in windows.
+
 #### Enable WSL (Windows Linux subsystem)
+
+[Microsoft docs](https://docs.microsoft.com/en-us/windows/wsl/install-win10) show how to enable WSL
 
 #### Install our sfm to WSL
 
@@ -48,7 +56,7 @@ pip install git+https://github.com/pureexe/colmap2deeparc
 pip install git+https://github.com/pureexe/deeparc2undistort
 ```
 
-## usage
+## Usage
 ```
 deeparc2undistort -i <input images directory> -r <reference camera model> -o <output colmap undistorted directory>
 ```
