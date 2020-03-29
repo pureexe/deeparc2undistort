@@ -7,7 +7,7 @@ setuptools.setup(
     author_email="pakkapon.p_s19@vistec.ac.th",
     description="convert images from deeparc into colmap undistorted",
     url="https://github.com/pureexe/colmap2deeparc",
-    packages=setuptools.find_packages(),
+    packages=[''],
     py_modules=['deeparc2undistort'],
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -16,6 +16,7 @@ setuptools.setup(
     entry_points={
      'console_scripts': ['deeparc2undistort=deeparc2undistort:entry_point'],
     },
-    package_data={'deeparc2undistort': ['window5x5_matching_no_duplicate.txt']},
+    include_package_data=True,
+    package_data={'': ['window5x5_matching_no_duplicate.txt']},
     python_requires='>=3.6'
 )

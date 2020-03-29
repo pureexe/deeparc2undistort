@@ -50,6 +50,9 @@ def call_feature_matching(db_path, use_gpu = True):
     except:
         # in case it doesn't wrap by package yet.
         matching_file = 'window5x5_matching_no_duplicate.txt'
+    if not os.path.exists(matching_file):
+        raise RuntimeError("window5x5_matching_no_duplicate.txt not found")
+
     subprocess.call([
         get_colmap_binary_path(), 'matches_importer',
         '--database_path', db_path,
