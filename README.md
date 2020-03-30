@@ -48,7 +48,11 @@ sudo apt install libceres-dev libfmt-dev
 
 ```
 
-#### Install Python Script
+### Install Python
+
+[https://www.youtube.com/watch?v=dX2-V2BocqQ](Youtube Video) show how to install python on windows
+ 
+#### Install Python Script to Windows Host (Not WSL)
 ```shell
 # install colmap2deeparc 
 pip install git+https://github.com/pureexe/colmap2deeparc
